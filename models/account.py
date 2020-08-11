@@ -64,7 +64,7 @@ class AccountInvoice(models.Model):
                         factura.resultado_xml_fel = base64.b64encode(xml_resultado)
                         factura.pdf_fel = certificacion_json['ResponseDATA3']
                     else:
-                        raise UserError(str(certificacion_json["ResponseDATA1"]))
+                        raise UserError(certificacion_json["ResponseDATA1"])
                 else:
                     raise UserError(str(r))
 
@@ -100,7 +100,7 @@ class AccountInvoice(models.Model):
                             certificacion_json = r.json()
 
                             if certificacion_json["Codigo"] != 1:
-                                raise UserError(str(certificacion_json["ResponseDATA1"]))
+                                raise UserError(certificacion_json["ResponseDATA1"])
 
 class AccountJournal(models.Model):
     _inherit = "account.journal"
