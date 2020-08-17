@@ -30,13 +30,17 @@ class AccountInvoice(models.Model):
                 xmls = xmls.replace('Version="0.1"','Version="0.4"')
                 logging.warn(xmls)
                 xmls_base64 = base64.b64encode(xmls.encode("utf-8"))
+                
+                request_url = "https://felgtaws.digifact.com.gt"
+                if factura.company_id.pruebas_fel:
+                    request_url = "https://felgttestaws.digifact.com.gt"
 
                 headers = { "Content-Type": "application/json" }
                 data = {
                     "Username": factura.company_id.usuario_fel,
                     "Password": factura.company_id.clave_fel,
                 }
-                r = requests.post('https://felgttestaws.digifact.com.gt/felapi/api/login/get_token', json=data, headers=headers, verify=False)
+                r = requests.post(request_url+'/felapi/api/login/get_token', json=data, headers=headers, verify=False)
                 logging.warn(r.json())
                 token_json = r.json()
                 if token_json["Token"]:
@@ -46,7 +50,7 @@ class AccountInvoice(models.Model):
                         "Content-Type": "application/xml",
                         "Authorization": token,
                     }
-                    r = requests.post("https://felgttestaws.digifact.com.gt/felapi/api/FelRequest?NIT={}&TIPO=CERTIFICATE_DTE_XML_TOSIGN&FORMAT=XML%20PDF".format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls, headers=headers, verify=False)
+                    r = requests.post(request_url+'/felapi/api/FelRequest?NIT={}&TIPO=CERTIFICATE_DTE_XML_TOSIGN&FORMAT=XML%20PDF'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls, headers=headers, verify=False)
                     logging.warn(r.json())
                     certificacion_json = r.json()
                     if certificacion_json["Codigo"] == 1:
@@ -85,7 +89,7 @@ class AccountInvoice(models.Model):
                             "Username": factura.company_id.usuario_fel,
                             "Password": factura.company_id.clave_fel,
                         }
-                        r = requests.post('https://felgttestaws.digifact.com.gt/felapi/api/login/get_token', json=data, headers=headers, verify=False)
+                        r = requests.post(request_url+'/api/login/get_token', json=data, headers=headers, verify=False)
                         logging.warn(r.json())
                         token_json = r.json()
                         if token_json["Token"]:
@@ -95,7 +99,7 @@ class AccountInvoice(models.Model):
                                 "Content-Type": "application/xml",
                                 "Authorization": token,
                             }
-                            r = requests.post("https://felgttestaws.digifact.com.gt/felapi/api/FelRequest?NIT={}&TIPO=ANULAR_FEL_TOSIGN&FORMAT=XML".format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls, headers=headers, verify=False)
+                            r = requests.post(request_url+'/felapi/api/FelRequest?NIT={}&TIPO=ANULAR_FEL_TOSIGN&FORMAT=XML'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls, headers=headers, verify=False)
                             logging.warn(r.json())
                             certificacion_json = r.json()
 
