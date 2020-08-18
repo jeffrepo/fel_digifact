@@ -43,7 +43,7 @@ class AccountInvoice(models.Model):
                 r = requests.post(request_url+'/felapi/api/login/get_token', json=data, headers=headers, verify=False)
                 logging.warn(r.json())
                 token_json = r.json()
-                if token_json["Token"]:
+                if "Token" in token_json:
                     token = token_json["Token"]
 
                     headers = {
