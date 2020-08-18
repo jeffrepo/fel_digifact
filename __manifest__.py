@@ -7,7 +7,7 @@
     'description': """ Integración con factura electrónica de Digifact """,
     'author': 'aquíH',
     'website': 'http://aquih.com/',
-    'depends': ['account'],
+    'depends': ['fel_gt'],
     'data': [
         'views/account_view.xml',
     ],
