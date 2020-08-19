@@ -50,7 +50,7 @@ class AccountInvoice(models.Model):
                         "Content-Type": "application/xml",
                         "Authorization": token,
                     }
-                    r = requests.post(request_url+'/felapi/api/FelRequest?NIT={}&TIPO=CERTIFICATE_DTE_XML_TOSIGN&FORMAT=XML%20PDF'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls, headers=headers, verify=False)
+                    r = requests.post(request_url+'/felapi/api/FelRequest?NIT={}&TIPO=CERTIFICATE_DTE_XML_TOSIGN&FORMAT=XML%20PDF'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls.encode("utf-8"), headers=headers, verify=False)
                     logging.warn(r.text)
                     certificacion_json = r.json()
                     if certificacion_json["Codigo"] == 1:
@@ -81,8 +81,8 @@ class AccountInvoice(models.Model):
                 if factura.journal_id.generar_fel:
                     dte = factura.dte_anulacion()
                     if dte:
-                        xmls = etree.tostring(dte, xml_declaration=True, encoding="UTF-8").decode("utf-8")
-                        logging.warn(xmls)
+                        xmls = etree.tostring(dte, xml_declaration=True, encoding="UTF-8")
+                        logging.warn(xmls.decode("utf-8"))
 
                         request_url = "https://felgtaws.digifact.com.gt"
                         if factura.company_id.pruebas_fel:
