@@ -104,7 +104,7 @@ class AccountInvoice(models.Model):
                                 "Authorization": token,
                             }
                             r = requests.post(request_url+'/felapi/api/FelRequest?NIT={}&TIPO=ANULAR_FEL_TOSIGN&FORMAT=XML'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls, headers=headers, verify=False)
-                            logging.warn(r.json())
+                            logging.warn(r.text)
                             certificacion_json = r.json()
 
                             if certificacion_json["Codigo"] != 1:
