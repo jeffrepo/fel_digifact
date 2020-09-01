@@ -26,8 +26,8 @@ class AccountInvoice(models.Model):
 
                 dte = factura.dte_documento()
                 xmls = etree.tostring(dte, xml_declaration=True, encoding="UTF-8").decode("utf-8")
-                xmls = xmls.replace('http://www.sat.gob.gt/dte/fel/0.2.0','http://www.sat.gob.gt/dte/fel/0.1.0')
-                xmls = xmls.replace('Version="0.1"','Version="0.4"')
+                #xmls = xmls.replace('http://www.sat.gob.gt/dte/fel/0.2.0','http://www.sat.gob.gt/dte/fel/0.1.0')
+                #xmls = xmls.replace('Version="0.1"','Version="0.4"')
                 logging.warn(xmls)
                 xmls_base64 = base64.b64encode(xmls.encode("utf-8"))
                 
