@@ -71,7 +71,6 @@ class AccountMove(models.Model):
                         numero_autorizacion =  dte_resultado.xpath("//*[local-name() = 'NumeroAutorizacion']")[0]
 
                         factura.firma_fel = numero_autorizacion.text
-                        factura.name = str(numero_autorizacion.get("Serie"))+"-"+str(numero_autorizacion.get("Numero"))
                         factura.serie_fel = numero_autorizacion.get("Serie")
                         factura.numero_fel = numero_autorizacion.get("Numero")
                         factura.documento_xml_fel = xmls_base64
