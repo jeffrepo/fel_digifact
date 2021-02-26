@@ -3,8 +3,8 @@
     <data>
 
         <record model="ir.ui.view" id="invoice_form_fel_digifact">
-            <field name="name">account.invoice.form.fel_digifact</field>
-            <field name="model">account.invoice</field>
+            <field name="name">account.move.form.fel_digifact</field>
+            <field name="model">account.move</field>
             <field name="inherit_id" ref="fel_gt.invoice_form_fel_gt"/>
             <field name="arch" type="xml">
                 <data>
@@ -22,9 +22,6 @@
             <field name="inherit_id" ref="fel_gt.journal_form_fel_gt"/>
             <field name="arch" type="xml">
                 <data>
-                    <field name="tipo_documento_fel" position="after">
-                        <field name="generar_fel"/>
-                    </field>
                 </data>
             </field>
         </record>

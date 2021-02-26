@@ -12,28 +12,33 @@ import requests
 
 import logging
 
-class AccountInvoice(models.Model):
-    _inherit = "account.invoice"
+class AccountMove(models.Model):
+    _inherit = "account.move"
 
     pdf_fel = fields.Binary('PDF FEL', copy=False)
     pdf_fel_name = fields.Char('Nombre PDF FEL', default='pdf_fel.pdf', size=32)
+    
+    def _post(self, soft=True):
+        if self.certificar():
+            return super(AccountMove, self)._post(soft)
 
-    def invoice_validate(self):
-        for factura in self:    
-            if factura.journal_id.generar_fel:
-                if factura.firma_fel:
-                    raise UserError("La factura ya fue validada, por lo que no puede ser validada nuevamente")
-
+    def post(self):
+        if self.certificar():
+            return super(AccountMove, self).post()
+            
+    def certificar(self):
+        for factura in self:
+            if factura.requiere_certificacion():
+                self.ensure_one()
+                
+                if factura.error_pre_validacion():
+                    return
+                    
                 dte = factura.dte_documento()
                 xmls = etree.tostring(dte, xml_declaration=True, encoding="UTF-8").decode("utf-8")
-                #xmls = xmls.replace('http://www.sat.gob.gt/dte/fel/0.2.0','http://www.sat.gob.gt/dte/fel/0.1.0')
-                #xmls = xmls.replace('Version="0.1"','Version="0.4"')
                 logging.warn(xmls)
                 xmls_base64 = base64.b64encode(xmls.encode("utf-8"))
                 
-                #request_url = "https://felgtaws.digifact.com.gt"
-                #if factura.company_id.pruebas_fel:
-                #    request_url = "https://felgttestaws.digifact.com.gt"
                 request_token = "https://felgtaws.digifact.com.gt/gt.com.fel.api.v2/api/login/get_token"
                 request_certifica = "https://felgtaws.digifact.com.gt/gt.com.fel.api.v2/api/FelRequest"
                 if factura.company_id.pruebas_fel:
@@ -45,7 +50,6 @@ class AccountInvoice(models.Model):
                     "Username": factura.company_id.usuario_fel,
                     "Password": factura.company_id.clave_fel,
                 }
-                #r = requests.post(request_url+'/felapi/api/login/get_token', json=data, headers=headers, verify=False)
                 r = requests.post(request_token, json=data, headers=headers, verify=False)
                 logging.warn(r.text)
                 token_json = r.json()
@@ -56,7 +60,6 @@ class AccountInvoice(models.Model):
                         "Content-Type": "application/xml",
                         "Authorization": token,
                     }
-                    #r = requests.post(request_url+'/felapi/api/FelRequest?NIT={}&TIPO=CERTIFICATE_DTE_XML_TOSIGN&FORMAT=XML%20PDF'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls.encode("utf-8"), headers=headers, verify=False)
                     r = requests.post(request_certifica+'?NIT={}&TIPO=CERTIFICATE_DTE_XML_TOSIGN&FORMAT=XML%20PDF'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls.encode("utf-8"), headers=headers, verify=False)
                     logging.warn(r.text)
                     certificacion_json = r.json()
@@ -75,55 +78,60 @@ class AccountInvoice(models.Model):
                         factura.resultado_xml_fel = base64.b64encode(xml_resultado)
                         factura.pdf_fel = certificacion_json['ResponseDATA3']
                     else:
-                        raise UserError(certificacion_json["ResponseDATA1"])
+                        factura.error_certificador(certificacion_json["ResponseDATA1"])
+                        return False
+
                 else:
-                    raise UserError(str(r))
+                    factura.error_certificador(r.text)
+                    return False
+                    
+        return True
 
-        return super(AccountInvoice,self).invoice_validate()
-
-    def action_cancel(self):
+    def button_cancel(self):
         result = super(AccountInvoice, self).action_cancel()
-        if result:
+        for factura in self:
             for factura in self:
-                if factura.journal_id.generar_fel:
+                if factura.requiere_certificacion() and factura.firma_fel:
+                    self.ensure_one()
+                
                     dte = factura.dte_anulacion()
-                    if dte:
-                        xmls = etree.tostring(dte, xml_declaration=True, encoding="UTF-8")
-                        logging.warn(xmls.decode('utf-8'))
+                    
+                    xmls = etree.tostring(dte, xml_declaration=True, encoding="UTF-8")
+                    logging.warn(xmls.decode('utf-8'))
 
-                        request_url = "https://felgtaws.digifact.com.gt"
-                        if factura.company_id.pruebas_fel:
-                            request_url = "https://felgttestaws.digifact.com.gt"
+                    request_url = "https://felgtaws.digifact.com.gt"
+                    if factura.company_id.pruebas_fel:
+                        request_url = "https://felgttestaws.digifact.com.gt"
 
-                        headers = { "Content-Type": "application/json" }
-                        data = {
-                            "Username": factura.company_id.usuario_fel,
-                            "Password": factura.company_id.clave_fel,
+                    headers = { "Content-Type": "application/json" }
+                    data = {
+                        "Username": factura.company_id.usuario_fel,
+                        "Password": factura.company_id.clave_fel,
+                    }
+                    #r = requests.post(request_url+'/felapi/api/login/get_token', json=data, headers=headers, verify=False)
+                    r = requests.post(request_token, json=data, headers=headers, verify=False)
+                    logging.warn(r.text)
+                    token_json = r.json()
+
+                    if token_json["Token"]:
+                        token = token_json["Token"]
+
+                        headers = {
+                            "Content-Type": "application/xml",
+                            "Authorization": token,
                         }
-                        #r = requests.post(request_url+'/felapi/api/login/get_token', json=data, headers=headers, verify=False)
-                        r = requests.post(request_token, json=data, headers=headers, verify=False)
+                        #r = requests.post(request_url+'/felapi/api/FelRequest?NIT={}&TIPO=ANULAR_FEL_TOSIGN&FORMAT=XML'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls, headers=headers, verify=False)
+                        r = requests.post(request_certifica+'?NIT={}&TIPO=ANULAR_FEL_TOSIGN&FORMAT=XML'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls, headers=headers, verify=False)
                         logging.warn(r.text)
-                        token_json = r.json()
+                        certificacion_json = r.json()
 
-                        if token_json["Token"]:
-                            token = token_json["Token"]
-
-                            headers = {
-                                "Content-Type": "application/xml",
-                                "Authorization": token,
-                            }
-                            #r = requests.post(request_url+'/felapi/api/FelRequest?NIT={}&TIPO=ANULAR_FEL_TOSIGN&FORMAT=XML'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls, headers=headers, verify=False)
-                            r = requests.post(request_certifica+'?NIT={}&TIPO=ANULAR_FEL_TOSIGN&FORMAT=XML'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls, headers=headers, verify=False)
-                            logging.warn(r.text)
-                            certificacion_json = r.json()
-
-                            if certificacion_json["Codigo"] != 1:
-                                raise UserError(certificacion_json["ResponseDATA1"])
+                        if certificacion_json["Codigo"] != 1:
+                            raise UserError(certificacion_json["ResponseDATA1"])
+                    else:
+                        raise UserError(r.text)
 
 class AccountJournal(models.Model):
     _inherit = "account.journal"
-
-    generar_fel = fields.Boolean('Generar FEL')
 
 class ResCompany(models.Model):
     _inherit = "res.company"
