@@ -76,6 +76,7 @@ class AccountMove(models.Model):
                         factura.documento_xml_fel = xmls_base64
                         factura.resultado_xml_fel = base64.b64encode(xml_resultado)
                         factura.pdf_fel = certificacion_json['ResponseDATA3']
+                        factura.certificador_fel = "digifact"
                     else:
                         factura.error_certificador(certificacion_json["ResponseDATA1"])
                         return False
