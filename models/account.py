@@ -88,7 +88,7 @@ class AccountMove(models.Model):
         return True
 
     def button_cancel(self):
-        result = super(AccountInvoice, self).action_cancel()
+        result = super(AccountMove, self).button_cancel()
         for factura in self:
             for factura in self:
                 if factura.requiere_certificacion() and factura.firma_fel:
