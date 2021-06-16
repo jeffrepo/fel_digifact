@@ -39,11 +39,11 @@ class AccountMove(models.Model):
                 logging.warn(xmls)
                 xmls_base64 = base64.b64encode(xmls.encode("utf-8"))
                 
-                request_token = "https://felgtaws.digifact.com.gt/gt.com.fel.api.v2/api/login/get_token"
-                request_certifica = "https://felgtaws.digifact.com.gt/gt.com.fel.api.v2/api/FelRequest"
+                request_token = "https://felgtaws.digifact.com.gt/gt.com.fel.api.v3/api/login/get_token"
+                request_certifica = "https://felgtaws.digifact.com.gt/gt.com.fel.api.v3/api/FelRequestV2"
                 if factura.company_id.pruebas_fel:
-                    request_token = "https://felgttestaws.digifact.com.gt/felapiv2/api/login/get_token"
-                    request_certifica = "https://felgttestaws.digifact.com.gt/felapiv2/api/FelRequest"
+                    request_token = "https://felgttestaws.digifact.com.gt/gt.com.fel.api.v3/api/login/get_token"
+                    request_certifica = "https://felgttestaws.digifact.com.gt/gt.com.fel.api.v3/api/FelRequestV2"
 
                 headers = { "Content-Type": "application/json" }
                 data = {
@@ -99,16 +99,17 @@ class AccountMove(models.Model):
                     xmls = etree.tostring(dte, xml_declaration=True, encoding="UTF-8")
                     logging.warn(xmls.decode('utf-8'))
 
-                    request_url = "https://felgtaws.digifact.com.gt"
+                    request_token = "https://felgtaws.digifact.com.gt/gt.com.fel.api.v3/api/login/get_token"
+                    request_certifica = "https://felgtaws.digifact.com.gt/gt.com.fel.api.v3/api/FelRequestV2"
                     if factura.company_id.pruebas_fel:
-                        request_url = "https://felgttestaws.digifact.com.gt"
+                        request_token = "https://felgttestaws.digifact.com.gt/gt.com.fel.api.v3/api/login/get_token"
+                        request_certifica = "https://felgttestaws.digifact.com.gt/gt.com.fel.api.v3/api/FelRequestV2"
 
                     headers = { "Content-Type": "application/json" }
                     data = {
                         "Username": factura.company_id.usuario_fel,
                         "Password": factura.company_id.clave_fel,
                     }
-                    #r = requests.post(request_url+'/felapi/api/login/get_token', json=data, headers=headers, verify=False)
                     r = requests.post(request_token, json=data, headers=headers, verify=False)
                     logging.warn(r.text)
                     token_json = r.json()
@@ -120,7 +121,6 @@ class AccountMove(models.Model):
                             "Content-Type": "application/xml",
                             "Authorization": token,
                         }
-                        #r = requests.post(request_url+'/felapi/api/FelRequest?NIT={}&TIPO=ANULAR_FEL_TOSIGN&FORMAT=XML'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls, headers=headers, verify=False)
                         r = requests.post(request_certifica+'?NIT={}&TIPO=ANULAR_FEL_TOSIGN&FORMAT=XML'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls, headers=headers, verify=False)
                         logging.warn(r.text)
                         certificacion_json = r.json()
