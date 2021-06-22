@@ -50,7 +50,7 @@ class AccountInvoice(models.Model):
                         "Content-Type": "application/xml",
                         "Authorization": token,
                     }
-                    r = requests.post(request_certifica+'?NIT={}&USERNAME={}&TIPO=CERTIFICATE_DTE_XML_TOSIGN&FORMAT=XML%20PDF'.format(factura.company_id.vat.replace('-','').zfill(12), factura.company_id.vat.replace('-','')), data=xmls.encode("utf-8"), headers=headers, verify=False)
+                    r = requests.post(request_certifica+'?NIT={}&USERNAME={}&TIPO=CERTIFICATE_DTE_XML_TOSIGN&FORMAT=XML%20PDF'.format(factura.company_id.vat.replace('-','').zfill(12), factura.company_id.usuario_fel.split('.')[2]), data=xmls.encode("utf-8"), headers=headers, verify=False)
                     logging.warn(r.text)
                     certificacion_json = r.json()
                     if certificacion_json["Codigo"] == 1:
@@ -106,7 +106,7 @@ class AccountInvoice(models.Model):
                                 "Content-Type": "application/xml",
                                 "Authorization": token,
                             }
-                            r = requests.post(request_certifica+'?NIT={}&USERNAME={}&TIPO=ANULAR_FEL_TOSIGN&FORMAT=XML'.format(factura.company_id.vat.replace('-','').zfill(12), factura.company_id.vat.replace('-','')), data=xmls, headers=headers, verify=False)
+                            r = requests.post(request_certifica+'?NIT={}&USERNAME={}&TIPO=ANULAR_FEL_TOSIGN&FORMAT=XML'.format(factura.company_id.vat.replace('-','').zfill(12), factura.company_id.usuario_fel.split('.')[2]), data=xmls, headers=headers, verify=False)
                             logging.warn(r.text)
                             certificacion_json = r.json()
 
