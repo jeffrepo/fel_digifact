@@ -26,8 +26,6 @@ class AccountInvoice(models.Model):
 
                 dte = factura.dte_documento()
                 xmls = etree.tostring(dte, xml_declaration=True, encoding="UTF-8").decode("utf-8")
-                #xmls = xmls.replace('http://www.sat.gob.gt/dte/fel/0.2.0','http://www.sat.gob.gt/dte/fel/0.1.0')
-                #xmls = xmls.replace('Version="0.1"','Version="0.4"')
                 logging.warn(xmls)
                 xmls_base64 = base64.b64encode(xmls.encode("utf-8"))
                 
@@ -52,8 +50,7 @@ class AccountInvoice(models.Model):
                         "Content-Type": "application/xml",
                         "Authorization": token,
                     }
-                    #r = requests.post(request_url+'/felapi/api/FelRequest?NIT={}&TIPO=CERTIFICATE_DTE_XML_TOSIGN&FORMAT=XML%20PDF'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls.encode("utf-8"), headers=headers, verify=False)
-                    r = requests.post(request_certifica+'?NIT={}&TIPO=CERTIFICATE_DTE_XML_TOSIGN&FORMAT=XML%20PDF'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls.encode("utf-8"), headers=headers, verify=False)
+                    r = requests.post(request_certifica+'?NIT={}&USERNAME={}&TIPO=CERTIFICATE_DTE_XML_TOSIGN&FORMAT=XML%20PDF'.format(factura.company_id.vat.replace('-','').zfill(12), factura.company_id.vat.replace('-','')), data=xmls.encode("utf-8"), headers=headers, verify=False)
                     logging.warn(r.text)
                     certificacion_json = r.json()
                     if certificacion_json["Codigo"] == 1:
@@ -109,7 +106,7 @@ class AccountInvoice(models.Model):
                                 "Content-Type": "application/xml",
                                 "Authorization": token,
                             }
-                            r = requests.post(request_certifica+'?NIT={}&TIPO=ANULAR_FEL_TOSIGN&FORMAT=XML'.format(factura.company_id.vat.replace('-','').zfill(12)), data=xmls, headers=headers, verify=False)
+                            r = requests.post(request_certifica+'?NIT={}&USERNAME={}&TIPO=ANULAR_FEL_TOSIGN&FORMAT=XML'.format(factura.company_id.vat.replace('-','').zfill(12), factura.company_id.vat.replace('-','')), data=xmls, headers=headers, verify=False)
                             logging.warn(r.text)
                             certificacion_json = r.json()
 
