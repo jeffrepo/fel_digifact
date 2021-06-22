@@ -75,7 +75,8 @@ class AccountMove(models.Model):
                         factura.numero_fel = numero_autorizacion.get("Numero")
                         factura.documento_xml_fel = xmls_base64
                         factura.resultado_xml_fel = base64.b64encode(xml_resultado)
-                        factura.pdf_fel = certificacion_json['ResponseDATA3']
+                        if factura.company_id.no_guardar_pdf_fel == False:
+                            factura.pdf_fel = certificacion_json['ResponseDATA3']
                         factura.certificador_fel = "digifact"
                     else:
                         factura.error_certificador(certificacion_json["ResponseDATA1"])
@@ -138,4 +139,6 @@ class ResCompany(models.Model):
 
     usuario_fel = fields.Char('Usuario FEL', copy=False)
     clave_fel = fields.Char('Clave FEL', copy=False)
+    no_guardar_pdf_fel = fields.Boolean('No Guardar el PDF de FEL')
     pruebas_fel = fields.Boolean('Modo de Pruebas FEL')
+    
