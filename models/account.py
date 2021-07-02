@@ -79,7 +79,7 @@ class AccountMove(models.Model):
                             factura.pdf_fel = certificacion_json['ResponseDATA3']
                         factura.certificador_fel = "digifact"
                     else:
-                        factura.error_certificador(certificacion_json["ResponseDATA1"])
+                        factura.error_certificador(r.text)
                         return False
 
                 else:
