@@ -34,10 +34,10 @@ class Partner(models.Model):
                 }
                 r = requests.get(request_tax_info+'?NIT={}&DATA1=SHARED_GETINFONITcom&DATA2=NIT|{}&COUNTRY=GT&USERNAME={}'.format(company.vat.replace('-','').zfill(12), vat, company.usuario_fel), headers= headers_nuevos)
                 certificacion_json = r.json()
-                if "Response" in certificacion_json:
-                    if certificacion_json["Response"]["NOMBRE"]:
-                        nombre = certificacion_json["Response"]["NOMBRE"]
-                        nit = certificacion_json["Response"]["NIT"]
+                if "RESPONSE" in certificacion_json:
+                    if "NOMBRE" in certificacion_json["RESPONSE"]:
+                        nombre = certificacion_json["RESPONSE"]["NOMBRE"]
+                        nit = certificacion_json["RESPONSE"]["NIT"]
                         return {'nombre': nombre, 'nit': nit}
                     else:
                         return {'nombre': '', 'nit': ''}
