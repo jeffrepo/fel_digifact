@@ -43,7 +43,7 @@ class Partner(models.Model):
                 if "RESPONSE" in certificacion_json:
                     if "NOMBRE" in certificacion_json["RESPONSE"]:
                         nombre = certificacion_json["RESPONSE"]["NOMBRE"]
-                        nit = certificacion_json["Response"]["NIT"]
+                        nit = certificacion_json["RESPONSE"]["NIT"]
                         return {'nombre': nombre, 'nit': nit}
                     else:
                         return {'nombre': '', 'nit': ''}
